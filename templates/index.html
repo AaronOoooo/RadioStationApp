@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="search-container">
+    <form method="POST" action="{{ url_for('index') }}">
+        <input type="text" name="search" placeholder="Search stations..." value="{{ search_query }}">
+        <button type="submit">Search</button>
+    </form>
+</div>
+
+<div class="station-list">
+    {% if stations %}
+        <ul>
+        {% for station in stations %}
+            <li>
+                <a href="{{ url_for('station_detail', station_id=station.get('id', '')) }}">
+                    {{ station.get('name', 'Unknown Station') }}
+                </a> - {{ station.get('country', 'Unknown Country') }}
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No stations found. Try a different search term.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+body {
+    background-color: #001f3f; /* Deep navy blue */
+    color: #f5f5f5;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #5c4033; /* Warm chocolate brown */
+    padding: 20px;
+    text-align: center;
+}
+
+h1 {
+    color: #ff851b; /* Soft vibrant orange */
+}
+
+.search-container {
+    padding: 20px;
+    text-align: center;
+}
+
+.station-list {
+    padding: 20px;
+}
+
+.station-list ul {
+    list-style: none;
+    padding: 0;
+}
+
+.station-list li {
+    padding: 10px;
+    border-bottom: 1px solid #444;
+}
+
+.station-detail {
+    padding: 20px;
+}
+
+.station-detail img {
+    max-width: 100%;
+    height: auto;
+    margin-top: 10px;
+}
