@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="station-detail">
+    <h2>{{ station.get('name', 'Station Detail') }}</h2>
+    <p>Country: {{ station.get('country', 'Unknown') }}</p>
+    <p>Now Playing: {{ station.get('now_playing', {}).get('song', 'N/A') }}</p>
+    <p>Artist: {{ station.get('now_playing', {}).get('artist', 'N/A') }}</p>
+    <p>Album: {{ station.get('now_playing', {}).get('album', 'N/A') }}</p>
+    <p>Year: {{ station.get('now_playing', {}).get('year', 'N/A') }}</p>
+    {% if station.get('now_playing', {}).get('graphic') %}
+        <img src="{{ station.get('now_playing', {}).get('graphic') }}" alt="Album Art">
+    {% endif %}
+    
+    <!-- Audio player -->
+    <audio controls>
+        <source src="{{ station.get('stream_url', '') }}" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+</div>
+{% endblock %}
