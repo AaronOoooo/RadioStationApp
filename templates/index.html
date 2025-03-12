@@ -13,9 +13,9 @@
         <ul>
         {% for station in stations %}
             <li>
-                <a href="{{ url_for('station_detail', station_id=station.get('id', '')) }}">
+                <a href="{{ url_for('station_detail', station_uuid=station.get('stationuuid', '')) }}">
                     {{ station.get('name', 'Unknown Station') }}
-                </a> - {{ station.get('country', 'Unknown Country') }}
+                </a>                
             </li>
         {% endfor %}
         </ul>
