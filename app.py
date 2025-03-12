@@ -34,7 +34,7 @@ def get_station_by_uuid(station_uuid):
     """
     Retrieve station details by UUID.
     """
-    url = f"https://api.radio-browser.info/json/stations/byuuid/{station_uuid}"
+    url = f"https://de1.api.radio-browser.info/json/stations/byuuid/{station_uuid}"
     try:
         response = requests.get(url, timeout=10)
         response.raise_for_status()
