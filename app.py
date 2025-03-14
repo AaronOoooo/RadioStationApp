@@ -6,6 +6,9 @@ import os
 # Load environment variables from .env file (if needed)
 load_dotenv()
 
+# Import host and port settings from secret.py
+from secret import HOST, PORT
+
 app = Flask(__name__)
 
 def get_radio_stations(search_query=None, limit=20):
@@ -90,4 +93,4 @@ def station_detail(station_uuid):
 
 if __name__ == '__main__':
     # For development purposes, run in debug mode.
-    app.run(debug=True)
+     app.run(debug=True, host=HOST, port=PORT)
