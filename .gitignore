@@ -7,3 +7,5 @@ venv/
 
 # Environment variables
 .env
+
+secret.py
