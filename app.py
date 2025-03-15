@@ -1,7 +1,7 @@
 import os
 import time
 import requests
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
 
 # Load environment variables (if any)
@@ -152,6 +152,21 @@ def station_detail(station_uuid):
             'graphic': None
         }
     return render_template('station.html', station=station)
+
+@app.route('/metadata/<station_uuid>')
+def metadata(station_uuid):
+    """
+    Returns the current stream metadata for the given station as JSON.
+    """
+    station = get_station_by_uuid(station_uuid)
+    if station.get('url'):
+        now_playing = get_stream_metadata(station['url'])
+    else:
+        now_playing = {
+            'song': 'Unknown Song',
+            'artist': 'Unknown Artist'
+        }
+    return jsonify(now_playing)
 
 if __name__ == '__main__':
     # Run using host and port from secret.py
