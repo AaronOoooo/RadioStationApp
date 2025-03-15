@@ -105,7 +105,14 @@ header h1 {
 }
 
 .station-detail {
-    padding: 20px;
+    text-align: center; /* Centers all inline elements (text, button, etc.) */
+    margin: 0 auto;
+    max-width: 800px; /* Optional: limit the width if you want a narrower content area */
+}
+
+.station-detail audio {
+    display: block;   /* Make the audio player a block element */
+    margin: 0 auto;   /* Center the audio player horizontally */
 }
 
 .station-detail h2 {
