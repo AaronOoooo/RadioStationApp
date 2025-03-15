@@ -4,14 +4,11 @@
 <div class="station-detail">
     <h2>{{ station.get('name', 'Station Detail') }}</h2>
     <p>Country: {{ station.get('country', 'Unknown') }}</p>
-    <p>Now Playing: {{ station.get('now_playing', {}).get('song', 'N/A') }}</p>
-    <p>Artist: {{ station.get('now_playing', {}).get('artist', 'N/A') }}</p>
-    <p>Album: {{ station.get('now_playing', {}).get('album', 'N/A') }}</p>
-    <p>Year: {{ station.get('now_playing', {}).get('year', 'N/A') }}</p>
-    {% if station.get('now_playing', {}).get('graphic') %}
-        <img src="{{ station.get('now_playing', {}).get('graphic') }}" alt="Album Art">
-    {% endif %}
-    
+    <p>Now Playing: {{ station.now_playing.song }}</p>
+    <p>Artist: {{ station.now_playing.artist }}</p>
+    <p>Album: {{ station.now_playing.album }}</p>
+    <p>Year: {{ station.now_playing.year }}</p>
+
     <!-- Audio player -->
     <audio controls>
         <source src="{{ station.get('url', '') }}" type="audio/mpeg">
