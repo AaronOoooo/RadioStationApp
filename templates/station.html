@@ -2,17 +2,72 @@
 
 {% block content %}
 <div class="station-detail">
+    <!-- Station Name -->
     <h2>{{ station.get('name', 'Station Detail') }}</h2>
-    <p>Country: {{ station.get('country', 'Unknown') }}</p>
+
+    <!-- Now Playing Info -->
     <p>Now Playing: {{ station.now_playing.song }}</p>
     <p>Artist: {{ station.now_playing.artist }}</p>
-    <p>Album: {{ station.now_playing.album }}</p>
-    <p>Year: {{ station.now_playing.year }}</p>
 
-    <!-- Audio player -->
+    <!-- Audio Player -->
     <audio controls>
         <source src="{{ station.get('url', '') }}" type="audio/mpeg">
         Your browser does not support the audio element.
     </audio>
+
+    <!-- Place the button BELOW the audio player -->
+    <br />
+    <button onclick="toggleDetails()" style="margin-top: 1em;">
+        More details...
+    </button>
+
+    <!-- Hidden container for extra station details -->
+    <div id="more-details" style="display: none; margin-top: 1em;">
+        {% if station.get('clickcount') is not none %}
+            <p>Click Count: {{ station.get('clickcount') }}</p>
+        {% endif %}
+        {% if station.get('clicktrend') is not none %}
+            <p>Click Trend: {{ station.get('clicktrend') }}</p>
+        {% endif %}
+        {% if station.get('codec') %}
+            <p>Codec: {{ station.get('codec') }}</p>
+        {% endif %}
+        {% if station.get('language') %}
+            <p>Language: {{ station.get('language') }}</p>
+        {% endif %}
+        {% if station.get('tags') %}
+            <p>Tags: {{ station.get('tags') }}</p>
+        {% endif %}
+        {% if station.get('votes') is not none %}
+            <p>Votes: {{ station.get('votes') }}</p>
+        {% endif %}
+        
+        {% if station.get('homepage') %}
+            <!-- More visually appealing homepage link -->
+            <p>
+                Homepage:
+                <a href="{{ station.get('homepage') }}" 
+                   target="_blank" 
+                   style="color: #ff851b; text-decoration: underline;">
+                    Visit Homepage
+                </a>
+            </p>
+        {% endif %}
+
+        <!-- Country last, in smaller font -->
+        <p style="font-size: 0.9em; margin-top: 20px;">
+            Country: {{ station.get('country', 'Unknown') }}
+        </p>
+    </div>
 </div>
+
+<script>
+function toggleDetails() {
+    const details = document.getElementById('more-details');
+    // Toggle the display state
+    details.style.display = (details.style.display === 'none' || details.style.display === '') 
+        ? 'block' 
+        : 'none';
+}
+</script>
 {% endblock %}
