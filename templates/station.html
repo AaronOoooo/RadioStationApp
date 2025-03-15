@@ -15,10 +15,10 @@
         Your browser does not support the audio element.
     </audio>
 
-    <!-- Place the button BELOW the audio player -->
+    <!-- Button to toggle more details, now with an ID so we can modify its text -->
     <br />
-    <button onclick="toggleDetails()" style="margin-top: 1em;">
-        More details...
+    <button id="details-button" onclick="toggleDetails()" style="margin-top: 1em;">
+        More details... ▼
     </button>
 
     <!-- Hidden container for extra station details -->
@@ -43,7 +43,7 @@
         {% endif %}
         
         {% if station.get('homepage') %}
-            <!-- More visually appealing homepage link -->
+            <!-- Visually appealing homepage link -->
             <p>
                 Homepage:
                 <a href="{{ station.get('homepage') }}" 
@@ -64,10 +64,16 @@
 <script>
 function toggleDetails() {
     const details = document.getElementById('more-details');
-    // Toggle the display state
-    details.style.display = (details.style.display === 'none' || details.style.display === '') 
-        ? 'block' 
-        : 'none';
+    const button = document.getElementById('details-button');
+    
+    // Toggle the hidden container
+    if (details.style.display === 'none' || details.style.display === '') {
+        details.style.display = 'block';
+        button.textContent = 'Less details... ▲';
+    } else {
+        details.style.display = 'none';
+        button.textContent = 'More details... ▼';
+    }
 }
 </script>
 {% endblock %}
