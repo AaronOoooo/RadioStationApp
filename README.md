@@ -1,6 +1,6 @@
-# RadioStationApp
+# Paisley Pulse
 
-Welcome to **RadioStationApp** – your local web portal to discover, search, and stream a wide variety of internet radio stations. With a warm, jazzy, and calm design, this app is perfect for setting the mood as you explore your favorite genres.
+Welcome to **Paisley Pulse** – your local web portal to discover, search, and stream a wide variety of internet radio stations. With a warm, jazzy, and calm design, this app is perfect for setting the mood as you explore your favorite genres.
 
 ## Features
 
@@ -12,7 +12,7 @@ Welcome to **RadioStationApp** – your local web portal to discover, search, an
 
 ## How It Works
 
-RadioStationApp uses the [Radio Browser API](https://api.radio-browser.info/) (via the **de1** mirror) to fetch a rich list of internet radio stations. With a simple, clean interface built using Python and Flask, you can search for stations, view details, and start streaming your favorite music.
+Paisley Pulse uses the [Radio Browser API](https://api.radio-browser.info/) (via the **de1** mirror) to fetch a rich list of internet radio stations. With a simple, clean interface built using Python and Flask, you can search for stations, view details, and start streaming your favorite music.
 
 ## Getting Started
 
@@ -28,8 +28,8 @@ Follow these steps to get the project running on your computer:
 1. **Clone the Repository:**
 
    ```bash
-   git clone https://github.com/yourusername/RadioStationApp.git
-   cd RadioStationApp
+   git clone https://github.com/yourusername/PaisleyPulse.git
+   cd PaisleyPulse
    ```
 
 2. **Set Up a Virtual Environment:**
