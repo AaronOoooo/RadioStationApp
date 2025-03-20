@@ -1,22 +1,48 @@
-/* Keep your header styles as is */
+/* --- Header Styles --- */
 header {
-    background-color: #5c4033; /* Warm chocolate brown */
-    padding: 20px;
+    position: relative; /* For proper positioning of the overlay */
+    background-image: url('../images/musicbanner.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: #5c4033; /* Fallback/base color */
+    background-blend-mode: multiply;
     text-align: center;
+    padding: 15px 15px;
 }
 
-/* Update body to use the background image */
+header::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0, 0, 0, 0.3); /* Overlay darken */
+    z-index: 1;
+}
+
+header h1 {
+    position: relative;
+    z-index: 2;
+    /* A purple tone reminiscent of Prince’s style */
+    color: #a020f0; 
+    text-shadow: 1px 1px 4px #a19f13;
+    font-size: 3.5em;
+    line-height: 1.2;
+    margin: 0;
+
+    /* Use Kaushan Script with cursive as a fallback */
+    font-family: 'Kaushan Script', cursive;
+}
+
+/* --- Body Styles --- */
 body {
     /* Fallback background color if the image fails to load */
     background-color: #001f3f; 
-
-    /* The background image */
+    /* Background image for the page */
     background-image: url('../images/musicbackground.jpg');
     background-repeat: no-repeat;
     background-position: center center;
     background-size: cover;
     background-attachment: fixed;
-
     color: #f5f5f5;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
@@ -24,20 +50,7 @@ body {
     line-height: 1.6;
 }
 
-
-header {
-    background-color: #5c4033; /* Warm chocolate brown */
-    padding: 20px;
-    text-align: center;
-}
-
-header h1 {
-    color: #ff851b; /* Soft vibrant orange */
-    text-shadow: 1px 1px 3px #000;
-    font-size: 2.5em;
-    margin: 0;
-}
-
+/* --- Search Container --- */
 .search-container {
     padding: 20px;
     text-align: center;
@@ -67,6 +80,7 @@ header h1 {
     background-color: #e47413;
 }
 
+/* --- Station List Styles --- */
 .station-list {
     padding: 20px;
 }
@@ -94,25 +108,26 @@ header h1 {
 }
 
 .station-list li a {
-    color: #fff;                /* Ensure link text is bright white */
+    color: #fff; /* Ensure link text is bright white */
     text-decoration: none;
     font-size: 1.1em;
     text-shadow: 1px 1px 2px #000;
 }
 
 .station-list li a:hover {
-    color: #ff851b;            /* Hover color for station links */
+    color: #ff851b; /* Hover color for station links */
 }
 
+/* --- Station Detail Styles --- */
 .station-detail {
-    text-align: center; /* Centers all inline elements (text, button, etc.) */
+    text-align: center; /* Centers inline elements (text, button, etc.) */
     margin: 0 auto;
-    max-width: 800px; /* Optional: limit the width if you want a narrower content area */
+    max-width: 800px; /* Optional: limit width for a narrower content area */
 }
 
 .station-detail audio {
-    display: block;   /* Make the audio player a block element */
-    margin: 0 auto;   /* Center the audio player horizontally */
+    display: block;   /* Centers the audio player as a block element */
+    margin: 0 auto;
 }
 
 .station-detail h2 {
