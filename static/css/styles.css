@@ -1,48 +1,16 @@
-/* --- Header Styles --- */
-header {
-    position: relative; /* For proper positioning of the overlay */
-    background-image: url('../images/musicbanner.jpg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-color: #5c4033; /* Fallback/base color */
-    background-blend-mode: multiply;
-    text-align: center;
-    padding: 15px 15px;
-}
+/* Full styles.css file for RadioStationApp */
 
-header::before {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: rgba(0, 0, 0, 0.3); /* Overlay darken */
-    z-index: 1;
-}
-
-header h1 {
-    position: relative;
-    z-index: 2;
-    /* A purple tone reminiscent of Prince’s style */
-    color: #a020f0; 
-    text-shadow: 1px 1px 4px #a19f13;
-    font-size: 3.5em;
-    line-height: 1.2;
-    margin: 0;
-
-    /* Use Kaushan Script with cursive as a fallback */
-    font-family: 'Kaushan Script', cursive;
-}
-
-/* --- Body Styles --- */
+/* Body styling */
 body {
     /* Fallback background color if the image fails to load */
-    background-color: #001f3f; 
-    /* Background image for the page */
+    background-color: #001f3f;
+    /* Background image for the entire page */
     background-image: url('../images/musicbackground.jpg');
     background-repeat: no-repeat;
     background-position: center center;
     background-size: cover;
     background-attachment: fixed;
+    
     color: #f5f5f5;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
@@ -50,7 +18,43 @@ body {
     line-height: 1.6;
 }
 
-/* --- Search Container --- */
+/* Header styling with the new banner image using Flexbox */
+header {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Center vertically */
+    align-items: center;     /* Center horizontally */
+    color: #fff;
+    background: url('../images/musicbanner.jpg') no-repeat center -60px;
+    background-size: cover;
+    padding: 60px 20px; /* Reduced vertical padding to narrow the banner */
+    margin-bottom: 20px;
+}
+
+/* Overlay for better text readability on the header */
+header::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);  /* Darker overlay for enhanced text contrast */
+    z-index: 1;
+}
+
+/* Header text styling */
+header h1 {
+    position: relative;
+    z-index: 2; /* Ensure the text appears above the overlay */
+    color: #ff851b; /* Soft vibrant orange */
+    text-shadow: 1px 1px 3px #000;
+    font-size: 2.5em;
+    margin: 0;
+}
+
+/* Search container styling */
 .search-container {
     padding: 20px;
     text-align: center;
@@ -80,7 +84,7 @@ body {
     background-color: #e47413;
 }
 
-/* --- Station List Styles --- */
+/* Station list styling */
 .station-list {
     padding: 20px;
 }
@@ -118,16 +122,16 @@ body {
     color: #ff851b; /* Hover color for station links */
 }
 
-/* --- Station Detail Styles --- */
+/* Station detail styling */
 .station-detail {
-    text-align: center; /* Centers inline elements (text, button, etc.) */
+    text-align: center; /* Centers all inline elements */
     margin: 0 auto;
-    max-width: 800px; /* Optional: limit width for a narrower content area */
+    max-width: 800px; /* Limits the content width */
 }
 
 .station-detail audio {
-    display: block;   /* Centers the audio player as a block element */
-    margin: 0 auto;
+    display: block;   /* Makes the audio player a block element */
+    margin: 0 auto;   /* Centers the audio player horizontally */
 }
 
 .station-detail h2 {
