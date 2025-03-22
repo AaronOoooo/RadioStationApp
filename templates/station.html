@@ -5,9 +5,9 @@
     <!-- Station Name -->
     <h2>{{ station.get('name', 'Station Detail') }}</h2>
 
-    <!-- Now Playing Info -->
-    <p>Now Playing: {{ station.now_playing.song }}</p>
-    <p>Artist: {{ station.now_playing.artist }}</p>
+    <!-- Now Playing Info with IDs for updating -->
+    <p>Now Playing: <span id="now-playing-song">{{ station.now_playing.song }}</span></p>
+    <p>Artist: <span id="now-playing-artist">{{ station.now_playing.artist }}</span></p>
 
     <!-- Audio Player -->
     <audio controls>
@@ -15,7 +15,7 @@
         Your browser does not support the audio element.
     </audio>
 
-    <!-- Button to toggle more details, now with an ID so we can modify its text -->
+    <!-- Button to toggle more details -->
     <br />
     <button id="details-button" onclick="toggleDetails()" style="margin-top: 1em;">
         More details... ▼
@@ -41,19 +41,14 @@
         {% if station.get('votes') is not none %}
             <p>Votes: {{ station.get('votes') }}</p>
         {% endif %}
-        
         {% if station.get('homepage') %}
-            <!-- Visually appealing homepage link -->
             <p>
                 Homepage:
-                <a href="{{ station.get('homepage') }}" 
-                   target="_blank" 
-                   style="color: #ff851b; text-decoration: underline;">
+                <a href="{{ station.get('homepage') }}" target="_blank" style="color: #ff851b; text-decoration: underline;">
                     Visit Homepage
                 </a>
             </p>
         {% endif %}
-
         <!-- Country last, in smaller font -->
         <p style="font-size: 0.9em; margin-top: 20px;">
             Country: {{ station.get('country', 'Unknown') }}
@@ -62,11 +57,11 @@
 </div>
 
 <script>
+// Function to toggle the extra details
 function toggleDetails() {
     const details = document.getElementById('more-details');
     const button = document.getElementById('details-button');
     
-    // Toggle the hidden container
     if (details.style.display === 'none' || details.style.display === '') {
         details.style.display = 'block';
         button.textContent = 'Less details... ▲';
@@ -75,5 +70,16 @@ function toggleDetails() {
         button.textContent = 'More details... ▼';
     }
 }
+
+// Poll every 5 seconds for updated metadata
+setInterval(function(){
+    fetch('{{ url_for("metadata", station_uuid=station.get("stationuuid", "") ) }}')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById("now-playing-song").textContent = data.song;
+            document.getElementById("now-playing-artist").textContent = data.artist;
+        })
+        .catch(error => console.error('Error fetching metadata:', error));
+}, 5000);
 </script>
 {% endblock %}
