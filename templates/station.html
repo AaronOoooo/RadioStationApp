@@ -15,11 +15,18 @@
         Your browser does not support the audio element.
     </audio>
 
+    {% if station.now_playing.graphic %}
+        <div class="album-art-wrapper">
+            <img src="{{ station.now_playing.graphic }}" alt="Album Art" class="album-art">
+        </div>
+    {% endif %}
+    
     <!-- Button to toggle more details -->
     <br />
     <button id="details-button" onclick="toggleDetails()" style="margin-top: 1em;">
         More details... ▼
     </button>
+
 
     <!-- Hidden container for extra station details -->
     <div id="more-details" style="display: none; margin-top: 1em;">

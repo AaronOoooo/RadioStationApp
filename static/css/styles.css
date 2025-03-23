@@ -54,6 +54,23 @@ header h1 {
     margin: 0;
 }
 
+/* Album Art Styling */
+.album-art-wrapper {
+    text-align: center;
+    margin: 10px 0;
+}
+
+.album-art {
+    width: 300px;
+    border-radius: 10px;
+    box-shadow: 0 7px 10px rgba(0, 0, 0, 0.5);
+    transition: box-shadow 0.3s ease-in-out;
+}
+
+.album-art:hover {
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.6);
+}
+
 /* Search container styling */
 .search-container {
     padding: 20px;
