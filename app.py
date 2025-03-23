@@ -21,6 +21,24 @@ DEFAULT_METADATA = {
     'graphic': None
 }
 
+def fetch_cover_art(song, artist):
+    """
+    Fetch album artwork using the iTunes Search API.
+    Returns a 100x100 or 600x600 image URL, or None if not found.
+    """
+    try:
+        query = f"{artist} {song}".strip()
+        params = {"term": query, "media": "music", "limit": 1}
+        response = requests.get("https://itunes.apple.com/search", params=params, timeout=5)
+        response.raise_for_status()
+        results = response.json().get('results')
+        if results:
+            # Change '100x100' to '600x600' for higher quality
+            return results[0].get('artworkUrl100', "").replace("100x100", "600x600")
+    except Exception as e:
+        print(f"Cover art lookup failed: {e}")
+    return None
+
 def get_stream_metadata(stream_url):
     """
     Attempts to retrieve metadata (e.g., current song info) from a streaming URL.
@@ -67,6 +85,8 @@ def get_stream_metadata(stream_url):
                 artist, song = stream_title.split(" - ", 1)
                 artist = artist.strip()
                 song = song.strip()
+                artwork = fetch_cover_art(song, artist)
+
             else:
                 artist = ""
                 song = stream_title.strip()
@@ -76,13 +96,12 @@ def get_stream_metadata(stream_url):
                 'artist': artist or DEFAULT_METADATA['artist'],
                 'album': DEFAULT_METADATA['album'],
                 'year': DEFAULT_METADATA['year'],
-                'graphic': DEFAULT_METADATA['graphic']
+                'graphic': artwork
             }
 
     except Exception as e:
         print("Error retrieving metadata:", e)
         return DEFAULT_METADATA
-
 
 def get_radio_stations(search_query=None, limit=20):
     """
@@ -121,7 +140,6 @@ def get_station_by_uuid(station_uuid):
     except requests.RequestException as e:
         print(f"Error fetching station details: {e}")
         return {}
-
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
