@@ -12,6 +12,15 @@ from secret import HOST, PORT
 
 app = Flask(__name__)
 
+# Default metadata fallback
+DEFAULT_METADATA = {
+    'song': 'Unknown Song',
+    'artist': 'Unknown Artist',
+    'album': 'Unknown Album',
+    'year': 'N/A',
+    'graphic': None
+}
+
 def get_stream_metadata(stream_url):
     """
     Attempts to retrieve metadata (e.g., current song info) from a streaming URL.
@@ -20,72 +29,60 @@ def get_stream_metadata(stream_url):
     """
     try:
         headers = {'Icy-MetaData': '1', 'User-Agent': 'Mozilla/5.0'}
-        response = requests.get(stream_url, headers=headers, stream=True, timeout=10)
-        metaint_header = response.headers.get('icy-metaint')
-        if not metaint_header:
-            # Station did not provide a metadata interval
+
+        with requests.get(stream_url, headers=headers, stream=True, timeout=(5, 10)) as response:
+            response.raise_for_status()
+
+            metaint_header = response.headers.get('icy-metaint')
+            if not metaint_header:
+                return DEFAULT_METADATA
+
+            metaint = int(metaint_header)
+
+            # Skip the initial audio data up to the metadata block
+            _ = response.raw.read(metaint)
+
+            # Next byte indicates metadata block length in 16-byte units
+            meta_length_byte = response.raw.read(1)
+            if not meta_length_byte:
+                return DEFAULT_METADATA
+
+            meta_length = ord(meta_length_byte)
+            if meta_length == 0:
+                return DEFAULT_METADATA
+
+            metadata_bytes = response.raw.read(meta_length * 16)
+            metadata_str = metadata_bytes.rstrip(b'\0').decode('utf-8', errors='replace')
+
+            # Parse metadata like: "StreamTitle='Artist - Song';StreamUrl='';"
+            meta_parts = metadata_str.split(';')
+            meta_dict = {}
+            for part in meta_parts:
+                if part and '=' in part:
+                    key, value = part.split('=', 1)
+                    meta_dict[key.strip()] = value.strip().strip("'")
+
+            stream_title = meta_dict.get("StreamTitle", "")
+            if " - " in stream_title:
+                artist, song = stream_title.split(" - ", 1)
+                artist = artist.strip()
+                song = song.strip()
+            else:
+                artist = ""
+                song = stream_title.strip()
+
             return {
-                'song': 'Unknown Song',
-                'artist': 'Unknown Artist',
-                'album': 'Unknown Album',
-                'year': 'N/A',
-                'graphic': None
+                'song': song or DEFAULT_METADATA['song'],
+                'artist': artist or DEFAULT_METADATA['artist'],
+                'album': DEFAULT_METADATA['album'],
+                'year': DEFAULT_METADATA['year'],
+                'graphic': DEFAULT_METADATA['graphic']
             }
-        metaint = int(metaint_header)
-        # Skip the initial audio data up to the metadata block
-        response.raw.read(metaint)
-        # Next byte indicates the metadata block length in 16-byte units
-        meta_length_byte = response.raw.read(1)
-        if not meta_length_byte:
-            return {
-                'song': 'Unknown Song',
-                'artist': 'Unknown Artist',
-                'album': 'Unknown Album',
-                'year': 'N/A',
-                'graphic': None
-            }
-        meta_length = ord(meta_length_byte)
-        if meta_length == 0:
-            return {
-                'song': 'Unknown Song',
-                'artist': 'Unknown Artist',
-                'album': 'Unknown Album',
-                'year': 'N/A',
-                'graphic': None
-            }
-        # Read the metadata block (meta_length * 16 bytes)
-        metadata_bytes = response.raw.read(meta_length * 16)
-        metadata_str = metadata_bytes.rstrip(b'\0').decode('utf-8', errors='replace')
-        # Example metadata: "StreamTitle='Artist - Song Title';StreamUrl='';"
-        meta_parts = metadata_str.split(';')
-        meta_dict = {}
-        for part in meta_parts:
-            if part and '=' in part:
-                key, value = part.split('=', 1)
-                meta_dict[key.strip()] = value.strip().strip("'")
-        stream_title = meta_dict.get("StreamTitle", "")
-        if " - " in stream_title:
-            artist, song = stream_title.split(" - ", 1)
-            artist = artist.strip()
-            song = song.strip()
-        else:
-            artist, song = "", stream_title.strip()
-        return {
-            'song': song if song else 'Unknown Song',
-            'artist': artist if artist else 'Unknown Artist',
-            'album': 'Unknown Album',
-            'year': 'N/A',
-            'graphic': None
-        }
+
     except Exception as e:
         print("Error retrieving metadata:", e)
-        return {
-            'song': 'Unknown Song',
-            'artist': 'Unknown Artist',
-            'album': 'Unknown Album',
-            'year': 'N/A',
-            'graphic': None
-        }
+        return DEFAULT_METADATA
+
 
 def get_radio_stations(search_query=None, limit=20):
     """
@@ -98,6 +95,7 @@ def get_radio_stations(search_query=None, limit=20):
     else:
         url = "https://de1.api.radio-browser.info/json/stations"
         params = {"limit": limit}
+
     try:
         response = requests.get(url, params=params, timeout=10)
         response.raise_for_status()
@@ -105,6 +103,7 @@ def get_radio_stations(search_query=None, limit=20):
     except requests.RequestException as e:
         print(f"Error fetching stations: {e}")
         return []
+
 
 def get_station_by_uuid(station_uuid):
     """
@@ -123,6 +122,7 @@ def get_station_by_uuid(station_uuid):
         print(f"Error fetching station details: {e}")
         return {}
 
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     """
@@ -131,8 +131,10 @@ def index():
     search_query = ""
     if request.method == 'POST':
         search_query = request.form.get('search', "").strip()
+
     stations = get_radio_stations(search_query=search_query)
     return render_template('index.html', stations=stations, search_query=search_query)
+
 
 @app.route('/station/<station_uuid>')
 def station_detail(station_uuid):
@@ -144,14 +146,10 @@ def station_detail(station_uuid):
     if station.get('url'):
         station['now_playing'] = get_stream_metadata(station['url'])
     else:
-        station['now_playing'] = {
-            'song': 'Unknown Song',
-            'artist': 'Unknown Artist',
-            'album': 'Unknown Album',
-            'year': 'N/A',
-            'graphic': None
-        }
+        station['now_playing'] = DEFAULT_METADATA
+
     return render_template('station.html', station=station)
+
 
 @app.route('/metadata/<station_uuid>')
 def metadata(station_uuid):
@@ -163,10 +161,12 @@ def metadata(station_uuid):
         now_playing = get_stream_metadata(station['url'])
     else:
         now_playing = {
-            'song': 'Unknown Song',
-            'artist': 'Unknown Artist'
+            'song': DEFAULT_METADATA['song'],
+            'artist': DEFAULT_METADATA['artist']
         }
+
     return jsonify(now_playing)
+
 
 if __name__ == '__main__':
     # Run using host and port from secret.py
