@@ -109,10 +109,12 @@ def get_radio_stations(search_query=None, limit=20):
     If a search query is provided, use the search endpoint; otherwise, return a default list.
     """
     if search_query:
-        url = "https://de1.api.radio-browser.info/json/stations/search"
+        # Updated to the nl1 mirror
+        url = "https://nl1.api.radio-browser.info/json/stations/search"
         params = {"name": search_query, "limit": limit}
     else:
-        url = "https://de1.api.radio-browser.info/json/stations"
+        # Updated to the nl1 mirror
+        url = "https://nl1.api.radio-browser.info/json/stations"
         params = {"limit": limit}
 
     try:
@@ -123,12 +125,11 @@ def get_radio_stations(search_query=None, limit=20):
         print(f"Error fetching stations: {e}")
         return []
 
-
 def get_station_by_uuid(station_uuid):
     """
     Retrieve station details by UUID using the de1 mirror.
     """
-    url = f"https://de1.api.radio-browser.info/json/stations/byuuid/{station_uuid}"
+    url = f"https://nl1.api.radio-browser.info/json/stations/byuuid/{station_uuid}"
     try:
         response = requests.get(url, timeout=10)
         response.raise_for_status()

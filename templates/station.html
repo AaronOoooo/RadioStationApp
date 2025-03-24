@@ -79,14 +79,29 @@ function toggleDetails() {
 }
 
 // Poll every 5 seconds for updated metadata
-setInterval(function(){
-    fetch('{{ url_for("metadata", station_uuid=station.get("stationuuid", "") ) }}')
+<script>
+const metadataUrl = "{{ url_for('metadata', station_uuid=station.get('stationuuid', '') ) }}";
+const songElem = document.getElementById("now-playing-song");
+const artistElem = document.getElementById("now-playing-artist");
+const albumArtImg = document.querySelector(".album-art");
+
+// Store last known cover art URL
+let lastArtUrl = albumArtImg?.src || "";
+
+setInterval(function () {
+    fetch(metadataUrl)
         .then(response => response.json())
         .then(data => {
-            document.getElementById("now-playing-song").textContent = data.song;
-            document.getElementById("now-playing-artist").textContent = data.artist;
+            songElem.textContent = data.song;
+            artistElem.textContent = data.artist;
+
+            // Check and update album art if it's different
+            if (data.graphic && data.graphic !== lastArtUrl && albumArtImg) {
+                albumArtImg.src = data.graphic;
+                lastArtUrl = data.graphic;
+            }
         })
         .catch(error => console.error('Error fetching metadata:', error));
-}, 5000);
+}, 10000); // ⏱️ 10 seconds
 </script>
 {% endblock %}
