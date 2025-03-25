@@ -11,7 +11,7 @@
         </div>
     {% endif %}
 
-    <!-- Now Playing Info with IDs for updating -->
+    <!-- Now Playing Info -->
     <p>Now Playing: <span id="now-playing-song">{{ station.now_playing.song }}</span></p>
     <p>Artist: <span id="now-playing-artist">{{ station.now_playing.artist }}</span></p>
 
@@ -20,52 +20,51 @@
         <source src="{{ station.get('url', '') }}" type="audio/mpeg">
         Your browser does not support the audio element.
     </audio>
-    
-    <!-- Button to toggle more details -->
-    <br />
-    <button id="details-button" style="margin-top: 1em;">
-        More details... ▼
-    </button>
 
-    <!-- Hidden container for extra station details -->
-    <div id="more-details" style="display: none; margin-top: 1em;">
-        {% if station.get('clickcount') is not none %}
-            <p>Click Count: {{ station.get('clickcount') }}</p>
-        {% endif %}
-        {% if station.get('clicktrend') is not none %}
-            <p>Click Trend: {{ station.get('clicktrend') }}</p>
-        {% endif %}
-        {% if station.get('codec') %}
-            <p>Codec: {{ station.get('codec') }}</p>
-        {% endif %}
-        {% if station.get('language') %}
-            <p>Language: {{ station.get('language') }}</p>
-        {% endif %}
-        {% if station.get('tags') %}
-            <p>Tags: {{ station.get('tags') }}</p>
-        {% endif %}
-        {% if station.get('votes') is not none %}
-            <p>Votes: {{ station.get('votes') }}</p>
-        {% endif %}
-        {% if station.get('homepage') %}
-            <p>
-                Homepage:
-                <a href="{{ station.get('homepage') }}" target="_blank" style="color: #ff851b; text-decoration: underline;">
-                    Visit Homepage
-                </a>
+    <!-- Button + Dropdown Container -->
+    <div class="details-container">
+        <button id="details-button" style="margin-top: 1em;">
+            More details... ▼
+        </button>
+
+        <!-- Single, functional details panel -->
+        <div id="more-details" style="display: none; margin-top: 1em;">
+            {% if station.get('clickcount') is not none %}
+                <p>Click Count: {{ station.get('clickcount') }}</p>
+            {% endif %}
+            {% if station.get('clicktrend') is not none %}
+                <p>Click Trend: {{ station.get('clicktrend') }}</p>
+            {% endif %}
+            {% if station.get('codec') %}
+                <p>Codec: {{ station.get('codec') }}</p>
+            {% endif %}
+            {% if station.get('language') %}
+                <p>Language: {{ station.get('language') }}</p>
+            {% endif %}
+            {% if station.get('tags') %}
+                <p>Tags: {{ station.get('tags') }}</p>
+            {% endif %}
+            {% if station.get('votes') is not none %}
+                <p>Votes: {{ station.get('votes') }}</p>
+            {% endif %}
+            {% if station.get('homepage') %}
+                <p>
+                    Homepage:
+                    <a href="{{ station.get('homepage') }}" target="_blank" style="color: #ff851b; text-decoration: underline;">
+                        Visit Homepage
+                    </a>
+                </p>
+            {% endif %}
+            <p style="font-size: 0.9em; margin-top: 20px;">
+                Country: {{ station.get('country', 'Unknown') }}
             </p>
-        {% endif %}
-        <!-- Country last, in smaller font -->
-        <p style="font-size: 0.9em; margin-top: 20px;">
-            Country: {{ station.get('country', 'Unknown') }}
-        </p>
+        </div>
     </div>
 </div>
 
-<!-- Toggle and metadata update scripts -->
+<!-- JavaScript -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // Toggle More Details Button
     const detailsButton = document.getElementById('details-button');
     const details = document.getElementById('more-details');
 
@@ -77,7 +76,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Metadata polling logic
     const metadataUrl = "{{ url_for('metadata', station_uuid=station.get('stationuuid', '') ) }}";
     const songElem = document.getElementById("now-playing-song");
     const artistElem = document.getElementById("now-playing-artist");
@@ -98,7 +96,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             })
             .catch(error => console.error('Error fetching metadata:', error));
-    }, 10000); // every 10 seconds
+    }, 10000);
 });
 </script>
 {% endblock %}
