@@ -3,14 +3,31 @@ import time
 import requests
 from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
-# Load environment variables (if any)
+# Load environment variables
 load_dotenv()
 
 # Import HOST and PORT from secret.py
 from secret import HOST, PORT
 
 app = Flask(__name__)
+
+# Configure requests session with retries
+session = requests.Session()
+retries = Retry(
+    total=3,
+    backoff_factor=0.3,
+    status_forcelist=[500, 502, 503, 504]
+)
+session.mount('https://', HTTPAdapter(max_retries=retries))
+
+# API configuration (updated)
+API_BASE = "https://de1.api.radio-browser.info/json/"
+HEADERS = {
+    'User-Agent': 'RadioStationWAOH/1.0 (tucky2000@gmail.com)'  # Replace with your contact email
+}
 
 # Default metadata fallback
 DEFAULT_METADATA = {
@@ -22,33 +39,30 @@ DEFAULT_METADATA = {
 }
 
 def fetch_cover_art(song, artist):
-    """
-    Fetch album artwork using the iTunes Search API.
-    Returns a 100x100 or 600x600 image URL, or None if not found.
-    """
+    """Fetch album artwork using iTunes Search API."""
     try:
         query = f"{artist} {song}".strip()
         params = {"term": query, "media": "music", "limit": 1}
-        response = requests.get("https://itunes.apple.com/search", params=params, timeout=5)
+        response = session.get(
+            "https://itunes.apple.com/search",
+            params=params,
+            timeout=5,
+            headers=HEADERS
+        )
         response.raise_for_status()
         results = response.json().get('results')
         if results:
-            # Change '100x100' to '600x600' for higher quality
             return results[0].get('artworkUrl100', "").replace("100x100", "600x600")
     except Exception as e:
         print(f"Cover art lookup failed: {e}")
     return None
 
 def get_stream_metadata(stream_url):
-    """
-    Attempts to retrieve metadata (e.g., current song info) from a streaming URL.
-    This function sends a request with the 'Icy-MetaData' header and reads the
-    metadata block from the response.
-    """
+    """Retrieve metadata from radio stream."""
     try:
-        headers = {'Icy-MetaData': '1', 'User-Agent': 'Mozilla/5.0'}
+        headers = {'Icy-MetaData': '1', **HEADERS}
 
-        with requests.get(stream_url, headers=headers, stream=True, timeout=(5, 10)) as response:
+        with session.get(stream_url, headers=headers, stream=True, timeout=(5, 10)) as response:
             response.raise_for_status()
 
             metaint_header = response.headers.get('icy-metaint')
@@ -56,11 +70,8 @@ def get_stream_metadata(stream_url):
                 return DEFAULT_METADATA
 
             metaint = int(metaint_header)
-
-            # Skip the initial audio data up to the metadata block
             _ = response.raw.read(metaint)
 
-            # Next byte indicates metadata block length in 16-byte units
             meta_length_byte = response.raw.read(1)
             if not meta_length_byte:
                 return DEFAULT_METADATA
@@ -72,7 +83,6 @@ def get_stream_metadata(stream_url):
             metadata_bytes = response.raw.read(meta_length * 16)
             metadata_str = metadata_bytes.rstrip(b'\0').decode('utf-8', errors='replace')
 
-            # Parse metadata like: "StreamTitle='Artist - Song';StreamUrl='';"
             meta_parts = metadata_str.split(';')
             meta_dict = {}
             for part in meta_parts:
@@ -86,7 +96,6 @@ def get_stream_metadata(stream_url):
                 artist = artist.strip()
                 song = song.strip()
                 artwork = fetch_cover_art(song, artist)
-
             else:
                 artist = ""
                 song = stream_title.strip()
@@ -104,21 +113,19 @@ def get_stream_metadata(stream_url):
         return DEFAULT_METADATA
 
 def get_radio_stations(search_query=None, limit=20):
-    """
-    Fetch a list of radio stations.
-    If a search query is provided, use the search endpoint; otherwise, return a default list.
-    """
+    """Fetch list of radio stations."""
+    endpoint = "stations/search" if search_query else "stations"
+    params = {"limit": limit}
     if search_query:
-        # Updated to the nl1 mirror
-        url = "https://nl1.api.radio-browser.info/json/stations/search"
-        params = {"name": search_query, "limit": limit}
-    else:
-        # Updated to the nl1 mirror
-        url = "https://nl1.api.radio-browser.info/json/stations"
-        params = {"limit": limit}
+        params["name"] = search_query
 
     try:
-        response = requests.get(url, params=params, timeout=10)
+        response = session.get(
+            f"{API_BASE}{endpoint}",
+            params=params,
+            timeout=10,
+            headers=HEADERS
+        )
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
@@ -126,27 +133,37 @@ def get_radio_stations(search_query=None, limit=20):
         return []
 
 def get_station_by_uuid(station_uuid):
-    """
-    Retrieve station details by UUID using the de1 mirror.
-    """
-    url = f"https://nl1.api.radio-browser.info/json/stations/byuuid/{station_uuid}"
+    """Get station details by UUID."""
     try:
-        response = requests.get(url, timeout=10)
+        response = session.get(
+            f"{API_BASE}stations/byuuid/{station_uuid}",
+            timeout=10,
+            headers=HEADERS
+        )
         response.raise_for_status()
         station_data = response.json()
-        if station_data:
-            return station_data[0]
-        else:
-            return {}
+        return station_data[0] if station_data else {}
     except requests.RequestException as e:
         print(f"Error fetching station details: {e}")
         return {}
 
+def check_api_health():
+    """Check API status using stations endpoint"""
+    try:
+        response = session.get(
+            f"{API_BASE}stations",
+            params={"limit": 1},
+            timeout=10,
+            headers=HEADERS
+        )
+        return response.status_code == 200
+    except Exception as e:
+        print(f"Health check error: {e}")
+        return False
+    
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    """
-    Home route: displays a list of radio stations with an optional search filter.
-    """
+    """Home route with station list."""
     search_query = ""
     if request.method == 'POST':
         search_query = request.form.get('search', "").strip()
@@ -154,13 +171,9 @@ def index():
     stations = get_radio_stations(search_query=search_query)
     return render_template('index.html', stations=stations, search_query=search_query)
 
-
 @app.route('/station/<station_uuid>')
 def station_detail(station_uuid):
-    """
-    Station detail route: displays detailed information about a station,
-    including now playing metadata if available.
-    """
+    """Station detail page."""
     station = get_station_by_uuid(station_uuid)
     if station.get('url'):
         station['now_playing'] = get_stream_metadata(station['url'])
@@ -169,24 +182,16 @@ def station_detail(station_uuid):
 
     return render_template('station.html', station=station)
 
-
 @app.route('/metadata/<station_uuid>')
 def metadata(station_uuid):
-    """
-    Returns the current stream metadata for the given station as JSON.
-    """
+    """JSON metadata endpoint."""
     station = get_station_by_uuid(station_uuid)
-    if station.get('url'):
-        now_playing = get_stream_metadata(station['url'])
-    else:
-        now_playing = {
-            'song': DEFAULT_METADATA['song'],
-            'artist': DEFAULT_METADATA['artist']
-        }
-
+    now_playing = get_stream_metadata(station['url']) if station.get('url') else DEFAULT_METADATA
     return jsonify(now_playing)
 
-
 if __name__ == '__main__':
-    # Run using host and port from secret.py
-    app.run(debug=True, host=HOST, port=PORT)
+    if check_api_health():
+        print("RadioBrowser API is available")
+        app.run(debug=True, host=HOST, port=PORT)
+    else:
+        print("Error: RadioBrowser API is unavailable. Check your network connection.")
