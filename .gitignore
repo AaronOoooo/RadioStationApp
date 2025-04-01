@@ -9,3 +9,7 @@ venv/
 .env
 
 secret.py
+
+dist/
+
+build/
