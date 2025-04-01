@@ -24,7 +24,7 @@ retries = Retry(
 session.mount('https://', HTTPAdapter(max_retries=retries))
 
 # API configuration (updated)
-API_BASE = "https://de1.api.radio-browser.info/json/"
+API_BASE = "https://all.api.radio-browser.info/json/"
 HEADERS = {
     'User-Agent': 'RadioStationWAOH/1.0 (tucky2000@gmail.com)'  # Replace with your contact email
 }
