@@ -3,7 +3,11 @@
 {% block content %}
 <div class="search-container">
     <form method="POST" action="{{ url_for('index') }}">
-        <input type="text" name="search" placeholder="Search stations..." value="{{ search_query }}">
+        <input type="text" name="search" 
+        placeholder="Find your groove..." 
+        value="{{ search_query }}" 
+        onfocus="this.placeholder=''" 
+        onblur="this.placeholder='Find your groove...'"> 
         <button type="submit">Search</button>
     </form>
 </div>

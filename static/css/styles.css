@@ -87,6 +87,10 @@ header h1 {
     font-size: 1em;
 }
 
+.search-container input[type="text"]::placeholder {
+    color: #ccc;
+}
+
 .search-container button {
     padding: 10px 20px;
     font-size: 1em;
