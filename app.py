@@ -65,28 +65,62 @@ def fetch_cover_art(song, artist):
 
 def generate_placeholder_album_art(artist, song, width=600, height=600):
     """
-    Generate a dynamic placeholder image with random colorful splashes
-    and overlay the artist and song text.
+    Generate a dynamic, creative placeholder album art that includes:
+      - A gradient background
+      - A few random creative shapes
+      - Overlaid artist and song text with a semi-transparent background box,
+        with the vertical placement randomized.
     """
     import random, os
     from io import BytesIO
     from PIL import Image, ImageDraw, ImageFont
 
-    # Create a new RGBA image with a random background color.
-    bg_color = tuple(random.randint(50, 200) for _ in range(3)) + (255,)
-    image = Image.new('RGBA', (width, height), bg_color)
-    draw = ImageDraw.Draw(image)
+    # --- Create a gradient background ---
+    start_color = tuple(random.randint(0, 100) for _ in range(3))
+    end_color = tuple(random.randint(150, 255) for _ in range(3))
+    gradient = Image.new('RGBA', (width, height))
+    for y in range(height):
+        r = int(start_color[0] + (end_color[0] - start_color[0]) * (y / height))
+        g = int(start_color[1] + (end_color[1] - start_color[1]) * (y / height))
+        b = int(start_color[2] + (end_color[2] - start_color[2]) * (y / height))
+        for x in range(width):
+            gradient.putpixel((x, y), (r, g, b, 255))
+    
+    draw = ImageDraw.Draw(gradient, 'RGBA')
 
-    # Draw random colorful splashes (ellipses) across the image.
+    # --- Draw a few random creative shapes ---
+    # Draw random color streaks (lines) – 10 of them.
     for _ in range(10):
-        x0 = random.randint(0, width)
-        y0 = random.randint(0, height)
+        start_point = (random.randint(0, width), random.randint(0, height))
+        end_point = (random.randint(0, width), random.randint(0, height))
+        line_color = tuple(random.randint(0, 255) for _ in range(3)) + (random.randint(100, 200),)
+        thickness = random.randint(3, 8)
+        draw.line([start_point, end_point], fill=line_color, width=thickness)
+
+    # Draw a few ovals – 3 of them.
+    for _ in range(3):
+        x0 = random.randint(0, width - 100)
+        y0 = random.randint(0, height - 100)
         x1 = x0 + random.randint(50, 150)
         y1 = y0 + random.randint(50, 150)
-        ellipse_color = tuple(random.randint(0, 255) for _ in range(3)) + (200,)
-        draw.ellipse([x0, y0, x1, y1], fill=ellipse_color)
+        oval_color = tuple(random.randint(0, 255) for _ in range(3)) + (random.randint(100, 180),)
+        draw.ellipse([x0, y0, x1, y1], fill=oval_color)
 
-    # Load a font from your fonts folder.
+    # Draw a couple of rectangles with semi-transparent fills.
+    for _ in range(2):
+        x0 = random.randint(0, width - 50)
+        y0 = random.randint(0, height - 50)
+        x1 = x0 + random.randint(30, 150)
+        y1 = y0 + random.randint(30, 150)
+        rect_color = tuple(random.randint(0, 255) for _ in range(3)) + (random.randint(50, 150),)
+        draw.rectangle([x0, y0, x1, y1], fill=rect_color)
+
+    # Draw one random polygon.
+    points = [(random.randint(0, width), random.randint(0, height)) for _ in range(4)]
+    poly_color = tuple(random.randint(0, 255) for _ in range(3)) + (random.randint(50, 150),)
+    draw.polygon(points, fill=poly_color)
+
+    # --- Load font and measure text ---
     font_path = os.path.join(os.path.dirname(__file__), 'fonts', 'OpenSans-Bold.ttf')
     try:
         font_size = 40
@@ -95,7 +129,6 @@ def generate_placeholder_album_art(artist, song, width=600, height=600):
         print("Error loading font, using default.", e)
         font = ImageFont.load_default()
 
-    # Prepare the text to display.
     text_artist = artist
     text_song = song
 
@@ -108,17 +141,18 @@ def generate_placeholder_album_art(artist, song, width=600, height=600):
     song_width = song_bbox[2] - song_bbox[0]
     song_height = song_bbox[3] - song_bbox[1]
 
-    # We'll add 10px spacing between artist and song text.
-    total_text_height = artist_height + song_height + 10
+    spacing = 10  # space between lines
+    total_text_height = artist_height + song_height + spacing
 
-    # Center both lines of text horizontally.
+    # --- Randomize vertical placement for text ---
+    # Choose a random y position ensuring text is fully visible (with a 20px margin).
+    y_text = random.randint(20, height - total_text_height - 20)
+    
+    # Center text horizontally.
     x_artist = (width - artist_width) / 2
     x_song = (width - song_width) / 2
 
-    # Center the combined text block vertically.
-    y_text = (height - total_text_height) / 2
-
-    # Draw a semi-transparent rectangle behind the text for readability.
+    # --- Draw semi-transparent rectangle behind text ---
     overlay_margin = 10
     overlay_x0 = min(x_artist, x_song) - overlay_margin
     overlay_y0 = y_text - overlay_margin
@@ -126,14 +160,15 @@ def generate_placeholder_album_art(artist, song, width=600, height=600):
     overlay_y1 = y_text + total_text_height + overlay_margin
     draw.rectangle([overlay_x0, overlay_y0, overlay_x1, overlay_y1], fill=(0, 0, 0, 150))
 
-    # Draw the artist and song text in white.
+    # --- Draw the text in white ---
     text_color = (255, 255, 255, 255)
     draw.text((x_artist, y_text), text_artist, font=font, fill=text_color)
-    draw.text((x_song, y_text + artist_height + 10), text_song, font=font, fill=text_color)
+    draw.text((x_song, y_text + artist_height + spacing), text_song, font=font, fill=text_color)
 
-    # Save the image to a bytes buffer.
+    # --- Save the image to a bytes buffer ---
+    from io import BytesIO
     buffer = BytesIO()
-    image.save(buffer, format='PNG')
+    gradient.save(buffer, format='PNG')
     buffer.seek(0)
     return buffer.getvalue()
 
