@@ -8,7 +8,9 @@
 </head>
 <body>
   <header>
-    <h1>Radio WAOH: The Paisley Pulse</h1>
+    <a href="{{ url_for('index') }}" style="display: block; text-decoration: none; color: inherit;">
+      <h1>Radio WAOH: The Paisley Pulse</h1>
+    </a>
   </header>
   <main>
     {% block content %}{% endblock %}
