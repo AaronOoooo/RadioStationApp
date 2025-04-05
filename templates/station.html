@@ -5,11 +5,13 @@
     <!-- Station Name -->
     <h2>{{ station.get('name', 'Station Detail') }}</h2>
 
-    {% if station.now_playing.graphic %}
-        <div class="album-art-wrapper">
-            <img src="{{ station.now_playing.graphic }}" alt="Album Art" class="album-art">
-        </div>
-    {% endif %}
+    <!-- Album Art Display -->
+    <div class="album-art-wrapper">
+      <img 
+        src="{{ station.now_playing.graphic or url_for('placeholder_art', artist=station.now_playing.artist, song=station.now_playing.song) }}" 
+        alt="Album Art" 
+        class="album-art">
+    </div>
 
     <!-- Now Playing Info -->
     <p>Now Playing: <span id="now-playing-song">{{ station.now_playing.song }}</span></p>
